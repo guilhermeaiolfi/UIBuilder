@@ -1,0 +1,86 @@
+{
+  	"name"    : "Builder Application",
+
+	"include" :
+  	[
+    	{
+    	  	"path" : "${QOOXDOO_PATH}/tool/data/config/application.json"
+    	}
+  	],
+
+
+
+
+	"let" :
+  	{
+	    "APPLICATION"  : "UIBuilder",
+	    "QOOXDOO_PATH" : "../../qooxdoo",
+	    "CACHE"        : "cache",
+	    "LOCALES"      : ["pt_BR", "en"],
+	    "TEST_INCLUDE" : "${APPLICATION}.*",
+	    "ROOT"         : "."
+  	},
+  		
+    
+  	"jobs":
+  	{
+  		/*"libraries" :
+	    {
+	      "library" :
+	      [
+	        {
+	          "manifest" : "contrib://UploadWidget/trunk/Manifest.json",
+	            "uri"          : "../cache/downloads/UploadWidget/trunk"
+	        }
+	      ]
+	    },*/
+  		"pretty":
+  		{
+	  		"pretty-print" : 
+	  		{
+	  		  "general" :
+	  		  {
+	  		    "indent-string"        : "    "
+	  		  }
+	  		}
+  		},
+		"common":
+		{
+			
+		    "include" :
+		    [
+		        "${APPLICATION}.Application",
+		        "${QXTHEME}"
+		    ],
+		    "settings" :
+		    {
+		    	"qx.version" 		: "alpha",
+		    	"qx.application" 	: "${APPLICATION}.Application",
+		    	"qx.theme" 			: "${QXTHEME}",
+		    	"qx.icontheme"		: "Tango"
+		 	},
+			"asset-let" :
+			{
+			      "qx.icontheme" : ["Tango", "Oxygen"],
+			      "qx.theme"     : ["Classic"]
+			}
+		},
+		
+	    "source" :
+	    {
+		  "variants" :
+		  {
+		    "=qx.debug" : ["on"]
+		  },
+	      "include" :     
+	      [
+	        "${APPLICATION}.*"	        
+	        
+	      ],
+	      "exclude" :
+	      [
+	      ]
+	    }  
+	}
+}
+

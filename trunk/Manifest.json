@@ -1,0 +1,35 @@
+{
+  "info" : 
+  {
+    "name" : "UIBuilder Library",
+
+    "summary" : "UIBuilder",
+    "description" : "Library to builder qooxdoo interfaces in a declarative way.",
+    
+    "keywords" : ["ui", "declarative"],
+    "homepage" : "http://some.homepage.url/",
+
+    "license" : "GPL",
+    "authors" : 
+    [
+      {
+        "name" : "Guilherme R. Aiolfi",
+        "email" : "gradinf@gmail.com"
+      }
+    ],
+
+    "version" : "trunk",
+    "qooxdoo-versions": ["trunk"]
+  },
+  
+  "provides" : 
+  {
+    "namespace"   : "UIBuilder",
+    "encoding"    : "utf-8",
+    "class"       : "source/class",
+    "resource"    : "source/resource",
+    "translation" : "source/translation",
+    "type"        : "library"
+  }
+}
+
