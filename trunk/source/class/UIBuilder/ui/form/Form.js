@@ -22,6 +22,9 @@ qx.Class.define("UIBuilder.ui.form.Form",
 
         this.__fieldsContainer = new qx.ui.container.Composite();
         this.__buttonsContainer = new qx.ui.container.Composite();
+        
+        this.__buttonsContainer.setMarginTop(5);
+        
         this.__buttonsContainer.setMaxHeight(30);
 
         this.__buttonsContainer.setLayout(new qx.ui.layout.HBox(10, 'right'));
