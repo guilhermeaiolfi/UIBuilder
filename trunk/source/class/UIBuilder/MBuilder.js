@@ -64,7 +64,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
             var widget = new definition.create();
 
-            this.set(widget, definition.set);
+            this._set(widget, definition.set);
 
             if (qx.Class.hasInterface(widget.constructor, UIBuilder.ui.form.IForm))
             {
@@ -129,7 +129,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
          * @param definition {var} TODOC
          * @return {void} 
          */
-        __flushBindingQueue : function(widget, definition)
+        __flushBindingQueue : function(target, definition)
         {
             if (this.__bindQueue[definition.id])
             {
@@ -137,10 +137,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 {
                     var bind = this.__bindQueue[definition.id].bind[i];
 
-                    if (qx.Class.hasInterface(widget.constructor, UIBuilder.ui.form.IForm) && bind.type == "field") {
-                        this._getFormController(widget).addBindingOptions(bind.targetProperty, widget, bind.property, bind.bidirectional, bind.targetModel, bind.toSerialize);
+                    if (qx.Class.hasInterface(target.constructor, UIBuilder.ui.form.IForm) && bind.type == "field") {
+                        this._getFormController(target).addBindingOptions(bind.targetProperty, target, bind.property, bind.bidirectional, bind.targetModel, bind.toSerialize);
                     } else {
-                        widget.bind(bind.property, widget, bind.targetProperty, bind.options);
+                        bind['from'].bind(bind.fromProperty, target, bind.targetProperty, bind.options);
                     }
                 }
 
@@ -233,11 +233,18 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                     var clazz = obj.constructor;
 
-                    var form = this._getLastForm('form');
-
-                    if ((qx.Class.hasInterface(clazz, qx.ui.form.IForm) && form))
+                    if (qx.Class.hasInterface(clazz, qx.ui.form.IForm))
                     {
-                        form.addItem(entry.id, obj, entry);
+                    	var form = this._getLastForm('form');
+                    	
+                    	if (form)
+                    	{
+                    		if (entry.id == undefined)
+                    		{
+                    			this.error("Form Field IDs is mandatory");
+                    		}
+                    		form.addItem(entry.id, obj, entry);
+                    	}
 
                         if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection) || qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection)) {
                             this.__configureModel(obj, entry);
@@ -246,7 +253,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 }
                 else if (widget[method])
                 {
-                    widget[method].apply(widget, entry);
+                    widget[method].apply(widget, [entry]);
                 }
             }
         },
@@ -317,17 +324,19 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                 store.bind("model" + (storeEntry.items && !qx.lang.String.startsWith(storeEntry.items, "[") ? "." + storeEntry.items : storeEntry.items ? storeEntry.items : ""), controller, "model");
 
-                if (qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection))
+                if (form)
                 {
-                    target = controller;
-                    targetProperty = "selection";
+	                if (qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection))
+	                {
+	                    target = controller;
+	                    targetProperty = "selection";
+	                }
+	                else if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection))
+	                {
+	                    targetProperty = "modelSelection[0]";
+	                }
+                	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty);
                 }
-                else if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection))
-                {
-                    targetProperty = "modelSelection[0]";
-                }
-
-                this._getFormController(form).addBindingOptions(entry.id, target, targetProperty);
             }
         },
 
@@ -478,7 +487,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
         __validateEntry : function(entry)
         {
             if (!entry.create) {
-                throw new Error("Missing create information to select class to create!");
+                throw new Error("Missing create information to select class to create! (#" + entry.id + ")");
             }
 
             if (entry.listen && !entry.id) {
@@ -519,7 +528,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
          * @param value {var} TODOC
          * @return {void | Object | var} TODOC
          */
-        set : function(obj, data, value)
+        _set : function(obj, data, value)
         {
             var setter = qx.core.Property.$$method.set;
 
