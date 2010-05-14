@@ -143,12 +143,16 @@ qx.Class.define("UIBuilder.data.controller.Form",
             var item = this.getTarget().getItems()[name];
             var targetProperty = this.__bindingOptions[name][targetProperty];
 
+            if (!targetProperty)
+            {
+            	targetProperty = this.__getTargetProperty(item);
+            }
             // console.log(this.__bindingOptions[name]);
             // remove the binding
-            this.__objectController.removeTarget(target ? target : item, this.__getTargetProperty(item, targetProperty), name);
+            this.__objectController.removeTarget(target ? target : targetProperty, name);
 
             // set up the new binding with the options
-            this.__objectController.addTarget(target ? target : item, this.__getTargetProperty(item, targetProperty), name, bidirectional, model2target, target2model);
+            this.__objectController.addTarget(target ? target : item, targetProperty, name, bidirectional, model2target, target2model);
         },
 
 
@@ -256,8 +260,18 @@ qx.Class.define("UIBuilder.data.controller.Form",
                 {
                     var item = items[name];
                     var options = this.__bindingOptions[name];
-                    var targetProperty = options[targetProperty];
-                    this.__objectController.removeTarget(options["target"] ? options["target"] : item, targetProperty, name);
+                    
+                    var targetProperty = null, target = item;
+                    if (options)
+                    {
+                    	targetProperty = options['targetProperty'];
+                    	target = options.target? options.target : item;
+                    }
+                    else
+                    {
+                    	targetProperty = this.__getTargetProperty(item);
+                    }
+	            	this.__objectController.removeTarget(target, targetProperty, name);
                 }
             }
 
@@ -285,10 +299,9 @@ qx.Class.define("UIBuilder.data.controller.Form",
          * @param targetProperty {var} TODOC
          * @return {var} TODOC
          */
-        __getTargetProperty : function(item, targetProperty) {
-            return targetProperty ? targetProperty : this.__isModelSelectable(item) ? this.__isMultiModelSelectable(item) ? "modelSelection" : "modelSelection[0]" : "value";
+        __getTargetProperty : function(item) {
+            return this.__isModelSelectable(item) ? (this.__isMultiModelSelectable(item) ? "modelSelection" : "modelSelection[0]") : "value";
         },
-
 
         /**
          * Internal helper for setting up the bindings using
@@ -314,20 +327,21 @@ qx.Class.define("UIBuilder.data.controller.Form",
 
                 var options = this.__bindingOptions[name];
 
-                if (options == null)
+                var targetProperty = this.__getTargetProperty(item);
+                
+                var target = item, model2target = null, target2model = null;
+                
+                if (options)
                 {
-                    var targetProperty = this.__getTargetProperty(item, null);
-
-                    this.__objectController.addTarget(item, targetProperty, name, true);
+                	target = options.target? options.target : item;
+                	if (options.targetProperty)
+                	{
+                		targetProperty = options.targetProperty;
+                	}
+                	model2target = options.model2target;
+                	target2model = options.target2model;
                 }
-                else
-                {
-                    var targetProperty = this.__getTargetProperty(item, options.targetProperty);
-
-                    // this.__objectController.removeTarget(options.target? options.target : item, targetProperty, name);
-                    // console.log(options.target? options.target : item, targetProperty, name, true, options.model2target, options.target2model);
-                    this.__objectController.addTarget(options.target ? options.target : item, targetProperty, name, true, options.model2target, options.target2model);
-                }
+                this.__objectController.addTarget(target, targetProperty, name, true, model2target, target2model);
             }
         },
 
