@@ -335,9 +335,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 var targetProperty = "value";
                 var target = obj, controller = null;
 
-                var idPath = entry.model.controller.set.modelPath;
+                var idPath = null;
                 if (entry.model.controller && entry.model.controller.set)
                 {
+                	idPath = entry.model.controller.set.modelPath;
                 	delete entry.model.controller.set.modelPath;
                 }
 
