@@ -15,11 +15,6 @@ qx.Mixin.define("UIBuilder.MBuilder",
          */
         build : function(definition)
         {
-            var db = this.__widgetRegistry;
-
-            if (!db) {
-                this.__widgetRegistry = {};
-            }
 
             var bind_queue = this.__bindQueue;
 
@@ -44,6 +39,11 @@ qx.Mixin.define("UIBuilder.MBuilder",
          */
         _registerObject : function(id, obj)
         {
+        	var db = this.__widgetRegistry;
+
+            if (!db) {
+                this.__widgetRegistry = {};
+            }
             if (id) {
                 this.__widgetRegistry[id] = obj;
             }
@@ -80,17 +80,44 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                 var controller = null;
 
-                if (definition.model && definition.model.controller)
+                if (definition.model) 
                 {
-                    controller = this.__create(definition.model.controller);
-                    controller.setTarget(widget);
+                	if (definition.model.controller)
+                	{
+	                    controller = this.__create(definition.model.controller);
+	                    controller.setTarget(widget);
+                	}
+                	else
+                    {
+                        controller = new UIBuilder.data.controller.Form(null, widget);
+                    }
+                	
+                	if (definition.model.store)
+                	{
+                		 var storeEntry = definition.model.store;
+                         var store = null;
+                         	
+                         if (qx.lang.Type.isString(storeEntry))
+                         {
+                         	store = this.getById(storeEntry);
+                         }
+                         else if (storeEntry.use != undefined)
+                         {
+                         	store = storeEntry.use;
+                         }
+                         else if (storeEntry.create != undefined)
+                         {
+                         	store = this.build(storeEntry);
+                         }
+                         else
+                         {
+                         	this.error("No store defined.");
+                         	return;
+                         }
+                         store.bind("model" + (definition.model.controller.items && !qx.lang.String.startsWith(definition.model.controller.items, "[") ? "." + definition.model.controller.items : definition.model.controller.items ? definition.model.controller.items : ""), controller, "model");
+                	}
                 }
-
-                // widget.setController(controller);
-                else
-                {
-                    controller = new UIBuilder.data.controller.Form(null, widget);
-                }
+                
 
                 form.controller = controller;
                 this.__forms.push(form);
@@ -174,9 +201,9 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
             for (var add in entry)
             {
-                if (qx.lang.String.startsWith(add, 'add'))
+                if (qx.lang.String.startsWith(add, 'add')) 
                 {
-                    if (add == 'add') {
+                    if (add == 'add') { // was already used
                         continue;
                     }
 
@@ -220,7 +247,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                 if (entry.create)
                 {
-                    obj = this.__create(entry);
+            		obj = this.__create(entry);
 
                     if (include)
                     {
@@ -242,14 +269,13 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     		if (entry.id == undefined)
                     		{
                     			this.error("Form Field IDs is mandatory");
+                    			return;
                     		}
                     		form.addItem(entry.id, obj, entry);
                     	}
                     	this.__configureModel(obj, entry);
-                        /*if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection) || qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection)) {
-                            this.__configureModel(obj, entry);
-                        }*/
                     }
+
                 }
                 else if (widget[method])
                 {
@@ -308,23 +334,24 @@ qx.Mixin.define("UIBuilder.MBuilder",
             var clazz = obj.constructor;
             var form = this._getLastForm('form');
 
+            var targetProperty = "value";
+            var target = obj, controller = null;
+            
             if (entry.model && entry.model.store)
             {
                 var storeEntry = entry.model.store;
                 var store = null;
-                	
                 if (qx.lang.Type.isString(storeEntry))
                 {
                 	store = this.getById(storeEntry);
                 }
+                else if (storeEntry.create != undefined)
+                {
+                	store = this.build(storeEntry);
+                }
                 else if (storeEntry.use != undefined)
                 {
                 	store = storeEntry.use;
-                }
-                else if (storeEntry.create != undefined)
-                {
-                	console.log(storeEntry);
-                	store = this.build(storeEntry);
                 }
                 else
                 {
@@ -332,8 +359,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 	return;
                 }
                 
-                var targetProperty = "value";
-                var target = obj, controller = null;
+                
 
                 var idPath = null;
                 if (entry.model.controller && entry.model.controller.set)
@@ -345,50 +371,53 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 controller = this.build(entry.model.controller);
 
                 controller.setTarget(obj);
-
+                
+                console.log("binding store to controller(" + entry.model.controller.id + ")");
+                //controller.bind("model", store, "model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""));
                 store.bind("model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""), controller, "model");
-
-                if (form)
-                {
-	                if (qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection))
-	                {
-	                    target = controller;
-	                    targetProperty = "selection";
-	                }
-	                else if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection))
-	                {
-	                    targetProperty = "modelSelection[0]";
-	                    if (idPath)
-	                    {
-	                    	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, true, 
-    	                	{
-    	                		converter: function(data)
-    	                		{
-    	                			var model = controller.getModel();
-    	                			if (model)
-    	                			{
-    	                				for (var i = 0; i < model.getLength(); i++) 
-    	                				{
-    	                					if (model.getItem(i).get(idPath) == data) return model.getItem(i);
-    	                				}
-    	                			}
-    	                		}
-    	                	}, {
-    	                		converter: function(data)
-    	                		{
-    	                			if (data)
-    	                			{
-    	                				return data.get(idPath);
-    	                			}
-    	                			return data;
-    	                		}
-    	                	});
-	                    	return;
-	                    }
-	                }
-	                this._getFormController(form).addBindingOptions(entry.id, target, targetProperty);
-                }
+                //console.log(store.getModel());
             }
+            if (form)
+            {
+                if (qx.Class.hasInterface(clazz, qx.ui.core.IMultiSelection))
+                {
+                    target = controller;
+                    targetProperty = "selection";
+                }
+                else if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection))
+                {
+                    targetProperty = "modelSelection[0]";
+                    if (idPath)
+                    {
+                    	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, true, 
+	                	{
+	                		converter: function(data)
+	                		{
+	                			var model = controller.getModel();
+	                			if (model)
+	                			{
+	                				for (var i = 0; i < model.getLength(); i++) 
+	                				{
+	                					if (model.getItem(i).get(idPath) == data) return model.getItem(i);
+	                				}
+	                			}
+	                		}
+	                	}, {
+	                		converter: function(data)
+	                		{
+	                			if (data)
+	                			{
+	                				return data.get(idPath);
+	                			}
+	                			return data;
+	                		}
+	                	});
+                    	return;
+                    }
+                }
+                this._getFormController(form).addBindingOptions(entry.id, target, targetProperty);
+            }
+            
         },
 
 

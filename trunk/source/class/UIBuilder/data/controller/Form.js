@@ -141,18 +141,20 @@ qx.Class.define("UIBuilder.data.controller.Form",
 
             // renew the affected binding
             var item = this.getTarget().getItems()[name];
-            var targetProperty = this.__bindingOptions[name][targetProperty];
+            var targetItemProperty = this.__bindingOptions[name][targetProperty];
 
             if (!targetProperty)
             {
-            	targetProperty = this.__getTargetProperty(item);
+            	targetItemProperty = this.__getTargetProperty(item);
+            	this.__objectController.removeTarget(item ? item : targetProperty, name);
             }
             // console.log(this.__bindingOptions[name]);
             // remove the binding
-            this.__objectController.removeTarget(target ? target : targetProperty, name);
+            //this.__objectController.removeTarget(target ? target : targetProperty, name);
 
             // set up the new binding with the options
-            this.__objectController.addTarget(target ? target : item, targetProperty, name, bidirectional, model2target, target2model);
+            this.__objectController.addTarget(target, targetProperty, name, bidirectional, model2target, target2model);
+            
         },
 
 
@@ -300,7 +302,20 @@ qx.Class.define("UIBuilder.data.controller.Form",
          * @return {var} TODOC
          */
         __getTargetProperty : function(item) {
-            return this.__isModelSelectable(item) ? (this.__isMultiModelSelectable(item) ? "modelSelection" : "modelSelection[0]") : "value";
+            if (this.__isModelSelectable(item))
+            {
+            	if (this.__isMultiModelSelectable(item))
+            	{
+            		if (item["set" + "ModelSelection"]) return "modelSelection";
+            		return "selection";
+            	}
+            	else
+        		{
+            		if (item["set" + "ModelSelection"]) return "modelSelection[0]";
+            		return "selection[0]";
+        		}
+            }
+            return "value";
         },
 
         /**
