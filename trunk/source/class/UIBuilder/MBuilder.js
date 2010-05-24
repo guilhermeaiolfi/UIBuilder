@@ -114,7 +114,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
                          	this.error("No store defined.");
                          	return;
                          }
-                         store.bind("model" + (definition.model.controller.items && !qx.lang.String.startsWith(definition.model.controller.items, "[") ? "." + definition.model.controller.items : definition.model.controller.items ? definition.model.controller.items : ""), controller, "model");
+                         store.addListenerOnce("loaded", function() {
+                        	 store.bind("model" + (definition.model.controller.items && !qx.lang.String.startsWith(definition.model.controller.items, "[") ? "." + definition.model.controller.items : definition.model.controller.items ? definition.model.controller.items : ""), controller, "model");
+                        	 
+                         }, this);
                 	}
                 }
                 
@@ -163,7 +166,6 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 for (var i=0; i<this.__bindQueue[definition.id].bind.length; i++)
                 {
                     var bind = this.__bindQueue[definition.id].bind[i];
-
                     if (qx.Class.hasInterface(target.constructor, UIBuilder.ui.form.IForm) && bind.type == "field") {
                         this._getFormController(target).addBindingOptions(bind.targetProperty, target, bind.property, bind.bidirectional, bind.targetModel, bind.toSerialize);
                     } else {
@@ -257,25 +259,23 @@ qx.Mixin.define("UIBuilder.MBuilder",
                             obj.setLayoutProperties(entry.position);
                         }
                     }
-
-                    var clazz = obj.constructor;
-
-                    if (qx.Class.hasInterface(clazz, qx.ui.form.IForm))
-                    {
-                    	var form = this._getLastForm('form');
-                    	
-                    	if (form)
-                    	{
-                    		if (entry.id == undefined)
-                    		{
-                    			this.error("Form Field IDs is mandatory");
-                    			return;
-                    		}
-                    		form.addItem(entry.id, obj, entry);
-                    	}
-                    	this.__configureModel(obj, entry);
-                    }
-
+	                var clazz = obj.constructor;
+	
+	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm))
+	                {
+	                	var form = this._getLastForm('form');
+	                	
+	                	if (form)
+	                	{
+	                		if (entry.id == undefined)
+	                		{
+	                			this.error("Form Field IDs is mandatory");
+	                			return;
+	                		}
+	                		form.addItem(entry.id, obj, entry);
+	                	}
+	                	this.__configureModel(obj, entry);
+	                }
                 }
                 else if (widget[method])
                 {
@@ -336,7 +336,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
             var targetProperty = "value";
             var target = obj, controller = null;
-            
+            var bidirectional = true;
             if (entry.model && entry.model.store)
             {
                 var storeEntry = entry.model.store;
@@ -359,23 +359,19 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 	return;
                 }
                 
-                
-
                 var idPath = null;
                 if (entry.model.controller && entry.model.controller.set)
                 {
                 	idPath = entry.model.controller.set.modelPath;
                 	delete entry.model.controller.set.modelPath;
+                	bidirectional = entry.model.controller.bidirectional != undefined? entry.model.controller.bidirectional : true;
                 }
 
                 controller = this.build(entry.model.controller);
 
                 controller.setTarget(obj);
                 
-                console.log("binding store to controller(" + entry.model.controller.id + ")");
-                //controller.bind("model", store, "model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""));
                 store.bind("model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""), controller, "model");
-                //console.log(store.getModel());
             }
             if (form)
             {
@@ -389,7 +385,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     targetProperty = "modelSelection[0]";
                     if (idPath)
                     {
-                    	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, true, 
+                    	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, bidirectional, 
 	                	{
 	                		converter: function(data)
 	                		{
@@ -415,7 +411,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     	return;
                     }
                 }
-                this._getFormController(form).addBindingOptions(entry.id, target, targetProperty);
+                this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, bidirectional);
             }
             
         },
@@ -479,13 +475,14 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 for (var i=0; i<entry.bind.length; i++)
                 {
                     var bind = entry.bind[i];
-
+                    
                     var target = qx.Bootstrap.isString(bind.target) ? this.getById(bind.target) : bind.target;
-
+                    //console.log(target);
                     if (target)
                     {
                         if (qx.Class.hasInterface(widget.constructor, UIBuilder.ui.form.IForm) && bind.type == 'field') {
-                            this._getFormController(widget).addBindingOptions(bind.targetProperty, target, bind.property, bind.bidirectional, bind.toModel, bind.toSerialize);
+                        	//console.log(bind.targetProperty, target, bind.property, bind.bidirectional);
+                            this._getFormController(widget).addBindingOptions(bind.targetProperty, target, bind.property? bind.property : entry.id, bind.bidirectional, bind.toModel, bind.toSerialize);
                         } else {
                             widget.bind(bind.property, target, bind.targetProperty, bind.options);
                         }

@@ -120,6 +120,7 @@ qx.Class.define("UIBuilder.data.controller.Form",
          */
         addBindingOptions : function(name, target, targetProperty, bidirectional, model2target, target2model)
         {
+    		//console.log(name, target, targetProperty, bidirectional);
             if (bidirectional == undefined) {
                 bidirectional = true;
             }
@@ -138,19 +139,8 @@ qx.Class.define("UIBuilder.data.controller.Form",
             if (this.getModel() == null || this.getTarget() == null) {
                 return;
             }
-
-            // renew the affected binding
-            var item = this.getTarget().getItems()[name];
-            var targetItemProperty = this.__bindingOptions[name][targetProperty];
-
-            if (!targetProperty)
-            {
-            	targetItemProperty = this.__getTargetProperty(item);
-            	this.__objectController.removeTarget(item ? item : targetProperty, name);
-            }
-            // console.log(this.__bindingOptions[name]);
-            // remove the binding
-            //this.__objectController.removeTarget(target ? target : targetProperty, name);
+            
+           	this.__objectController.removeTarget(target, targetProperty, name);
 
             // set up the new binding with the options
             this.__objectController.addTarget(target, targetProperty, name, bidirectional, model2target, target2model);
