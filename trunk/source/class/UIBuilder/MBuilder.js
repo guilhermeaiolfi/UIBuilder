@@ -62,7 +62,19 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 this.__validateEntry(definition);
             }
 
-            var widget = new definition.create();
+            var widget = null;
+            if (definition.create && definition.create['getInstance'])
+            {
+            	widget = definition.create.getInstance();
+            }
+            else if (definition.create)
+            {
+            	widget = new definition.create();
+            }
+            else
+            {
+            	widget = definition.use;
+            }
 
             this._set(widget, definition.set);
 
@@ -563,8 +575,8 @@ qx.Mixin.define("UIBuilder.MBuilder",
          */
         __validateEntry : function(entry)
         {
-            if (!entry.create) {
-                throw new Error("Missing create information to select class to create! (#" + entry.id + ")");
+            if (!entry.create && !entry.use) {
+                throw new Error("Missing create information to select class to create or use! (#" + entry.id + ")");
             }
 
             if (entry.listen && !entry.id) {
@@ -713,7 +725,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
         	}
         	for (var i = 0; i < entries.length; i++)
             {
-            	this.add(this.build(entries[i]));
+            	this.add(this.build(entries[i]), entries[i].position);
             }
         },
         
