@@ -120,7 +120,7 @@ qx.Class.define("UIBuilder.data.controller.Form",
          */
         addBindingOptions : function(name, target, targetProperty, bidirectional, model2target, target2model)
         {
-    		//console.log(name, target, targetProperty, bidirectional);
+    		//console.log(name, target, targetProperty, bidirectional, model2target, target2model);
             if (bidirectional == undefined) {
                 bidirectional = true;
             }

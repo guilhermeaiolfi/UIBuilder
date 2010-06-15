@@ -131,7 +131,7 @@ qx.Class.define("UIBuilder.data.store.Json",
      */
     _createRequest: function(url) {
       // create the request
-      this.__request = new qx.io.remote.Request(
+      this.__request = new UIBuilder.io.Request(
         url, "GET", "application/json"
       );
 

@@ -148,7 +148,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
             this.__addListeners(widget, definition);
 
-            this.__addBindings(widget, definition);
+            if (definition.bind)
+            {
+            	this.__addBindings(widget, definition);
+            }
 
             if (definition.init) {
                 definition.init.call(this, widget);
@@ -179,7 +182,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 {
                     var bind = this.__bindQueue[definition.id].bind[i];
                     if (qx.Class.hasInterface(target.constructor, UIBuilder.ui.form.IForm) && bind.type == "field") {
-                        this._getFormController(target).addBindingOptions(bind.targetProperty, target, bind.property, bind.bidirectional, bind.targetModel, bind.toSerialize);
+                        this._getFormController(target).addBindingOptions(bind.targetProperty, target, bind.property, bind.bidirectional, bind.toModel, bind.toSerialize);
                     } else {
                         bind['from'].bind(bind.fromProperty, target, bind.targetProperty, bind.options);
                     }
@@ -273,7 +276,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     }
 	                var clazz = obj.constructor;
 	
-	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm))
+	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm) && clazz != qx.ui.form.RadioButton)
 	                {
 	                	var form = this._getLastForm('form');
 	                	
@@ -282,7 +285,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 	                		if (entry.id == undefined)
 	                		{
 	                			this.error("Form Field IDs is mandatory");
-	                			return;
+	                			continue;
 	                		}
 	                		form.addItem(entry.id, obj, entry);
 	                	}
@@ -365,11 +368,6 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 {
                 	store = storeEntry.use;
                 }
-                else
-                {
-                	this.error("No store defined.");
-                	return;
-                }
                 
                 var idPath = null;
                 if (entry.model.controller && entry.model.controller.set)
@@ -383,7 +381,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                 controller.setTarget(obj);
                 
-                store.bind("model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""), controller, "model");
+                if (store)
+                {
+                	store.bind("model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""), controller, "model");
+                }
             }
             if (form)
             {
@@ -489,11 +490,9 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     var bind = entry.bind[i];
                     
                     var target = qx.Bootstrap.isString(bind.target) ? this.getById(bind.target) : bind.target;
-                    //console.log(target);
                     if (target)
                     {
                         if (qx.Class.hasInterface(widget.constructor, UIBuilder.ui.form.IForm) && bind.type == 'field') {
-                        	//console.log(bind.targetProperty, target, bind.property, bind.bidirectional);
                             this._getFormController(widget).addBindingOptions(bind.targetProperty, target, bind.property? bind.property : entry.id, bind.bidirectional, bind.toModel, bind.toSerialize);
                         } else {
                             widget.bind(bind.property, target, bind.targetProperty, bind.options);
@@ -511,8 +510,8 @@ qx.Mixin.define("UIBuilder.MBuilder",
                             fromProperty   : bind.property,
                             targetProperty : bind.targetProperty,
                             options        : bind.options,
-                            model2target   : bind.toModel,
-                            target2model   : bind.toSerialize,
+                            toModel		   : bind.toModel,
+                            toSerialize    : bind.toSerialize,
                             bidirectional  : bind.bidirectional
                         });
                     }

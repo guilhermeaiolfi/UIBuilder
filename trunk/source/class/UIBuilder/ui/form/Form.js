@@ -18,7 +18,8 @@ qx.Class.define("UIBuilder.ui.form.Form",
         this.__validationManager = new qx.ui.form.validation.Manager();
         this.__resetter = new qx.ui.form.Resetter();
 
-        this._setLayout(new qx.ui.layout.VBox());
+        var vBox = new qx.ui.layout.VBox();
+        this._setLayout(vBox);
 
         this.__fieldsContainer = new qx.ui.container.Composite();
         this.__buttonsContainer = new qx.ui.container.Composite();
@@ -32,7 +33,8 @@ qx.Class.define("UIBuilder.ui.form.Form",
         this.__buttonsContainer.setHeight(30);
 
         this._add(this.__fieldsContainer, { flex : 1 });
-        this._add(this.__buttonsContainer, { flex : 1 });
+        this._add(this.__buttonsContainer );
+
     },
 
     members :
