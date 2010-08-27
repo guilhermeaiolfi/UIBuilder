@@ -51,7 +51,7 @@ qx.Class.define("UIBuilder.data.store.Json",
     	this.setDelegate(delegate);
     }
 
-    if (url != null) {
+    if (url) {
       this.setUrl(url);
     }
   },
@@ -104,7 +104,8 @@ qx.Class.define("UIBuilder.data.store.Json",
     url : {
       check: "String",
       apply: "_applyUrl",
-      event: "changeUrl"
+      event: "changeUrl",
+      nullable: true
     }
   },
 
