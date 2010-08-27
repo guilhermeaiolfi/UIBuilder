@@ -1,3 +1,9 @@
+/**
+ * This class is responsable for creating a UI interface defined in a JSON. 
+ * It abstracts the complexity involved in creating form (its bindings and controllers).
+ * 
+ * Created By: Guilherme R. Aiolfi (gradinf at gmail dot com)
+ */
 qx.Mixin.define("UIBuilder.MBuilder",
 {
     members :
@@ -8,10 +14,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Initilized the creationf of the visual from a JSON definition
          *
-         * @param definition {var} TODOC
-         * @return {var} TODOC
+         * @param definition {Object} JSON definition
+         * @return {qx.core.Object} the parent object
          */
         build : function(definition)
         {
@@ -31,10 +37,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Creates a link between and object and a string id to be later returned by getById method
          *
-         * @param id {var} TODOC
-         * @param obj {Object} TODOC
+         * @param id {String} identifier of the object
+         * @param obj {Object} the object
          * @return {void} 
          */
         _registerObject : function(id, obj)
@@ -51,10 +57,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * created an object from a JSON definition
          *
-         * @param definition {var} TODOC
-         * @return {var} TODOC
+         * @param definition {Object} JSON definition
+         * @return {var} the created object
          */
         __create : function(definition)
         {
@@ -168,10 +174,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Flush the bindings queue
          *
-         * @param widget {var} TODOC
-         * @param definition {var} TODOC
+         * @param target {var} target of the bindings
+         * @param definition {var} binding JSON definition
          * @return {void} 
          */
         __flushBindingQueue : function(target, definition)
@@ -194,10 +200,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Creates all objects in the add* entries
          *
-         * @param widget {var} TODOC
-         * @param entry {var} TODOC
+         * @param widget {var} Parent object
+         * @param entry {var} JSON definition
          * @return {void} 
          */
         __runAddMethods : function(widget, entry)
@@ -246,12 +252,12 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Build the widget children
          *
-         * @param widget {var} TODOC
-         * @param children {var} TODOC
-         * @param method {var} TODOC
-         * @param include {var} TODOC
+         * @param widget {var} Children's parent
+         * @param children {var} children JSON definition
+         * @param method {var} method from the widget object used to add a child (add/addBindings/etc)
+         * @param include {Boolean} if the just created children should or shouldn't not be added to the parent widget
          * @return {void} 
          */
         __buildChildren : function(widget, children, method, include)
@@ -301,10 +307,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Since a JSON definition can have 1+ forms, it's useful to get the last created form
          *
-         * @param att {var} TODOC
-         * @return {var} TODOC
+         * @param att {var} form/controller
+         * @return {var} returns the last form created by the JSON definition
          */
         _getLastForm : function(att)
         {
@@ -319,16 +325,16 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Gets the controller attached to a form
          *
-         * @param widget {var} TODOC
-         * @return {var | null} TODOC
+         * @param form {var} form object
+         * @return {var | null} returns null with can't find the referenced form object
          */
-        _getFormController : function(widget)
+        _getFormController : function(form)
         {
             for (var i=0, len=this.__forms.length; i<len; i++)
             {
-                if (this.__forms[i].form == widget) {
+                if (this.__forms[i].form == form) {
                     return this.__forms[i].controller;
                 }
             }
@@ -338,10 +344,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Configures the form to deal correctly with all kinds of field without any throuble.
          *
-         * @param obj {Object} TODOC
-         * @param entry {var} TODOC
+         * @param obj {Object} Field
+         * @param entry {var} Form's Field JSON definition
          * @return {void} 
          */
         __configureModel : function(obj, entry)
@@ -431,10 +437,20 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Configure the widget to apply layout and set properties like padding, margin, etc 
+         * 
+         * e.g: 
+         * layout: {
+         * 	create: qx.ui.layout.HBox
+         * 	set: {
+         * 		spacingX   : 10,
+         *      spacingY   : 10,
+         *      columnFlex : [ 1, 1 ],
+         *      columnWidth: [ 0, 70 ]
+         * 	}
          *
-         * @param widget {var} TODOC
-         * @param entry {var} TODOC
+         * @param widget {var} widget to receive the layout attributes
+         * @param entry {var} the JSON definition containing attributes to set
          * @return {void} 
          */
         __configureLayout : function(widget, entry)
@@ -475,10 +491,19 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Add bindings to the widget, uses the "bind" entry from the JSON definition
+         * e.g.:
+         * bind:
+    	 * [{
+    	 * 	type: 'field/property',
+    	 * 	bidirectional: true/false,
+    	 * 	targetProperty: 'items',
+    	 * 	property: 'model',
+    	 * 	target: 'items_controller'
+    	 * }],
          *
-         * @param widget {var} TODOC
-         * @param entry {var} TODOC
+         * @param widget {qx.ui.core.Widget} Object from the create/use entry
+         * @param entry {Object} JSON definition for the bindings
          * @return {void} 
          */
         __addBindings : function(widget, entry)
@@ -521,10 +546,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Add listeners to the widget
          *
-         * @param widget {var} TODOC
-         * @param entry {var} TODOC
+         * @param widget {qx.ui.core.Widget} Object from the create/use entry
+         * @param entry {Object} The "listen" entry from the JSON definition
          * @return {void} 
          */
         __addListeners : function(widget, entry)
@@ -566,11 +591,11 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Validates the JSON definition entry
          *
-         * @param entry {var} TODOC
+         * @param entry {var} Piece from the JSON definition to be validated
          * @return {void} 
-         * @throws TODOC
+         * @throws Error if there isn't a "id" defined or the class on "create" doesn't exist
          */
         __validateEntry : function(entry)
         {
@@ -585,10 +610,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Returns the widget created by some previously definition
          *
-         * @param id {var} TODOC
-         * @return {Object | null} TODOC
+         * @param id {String} identifier of the object
+         * @return {Object | null} the object itself
          */
         getById : function(id)
         {
@@ -609,12 +634,13 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * It is different from the qx.core.Object because it doesn't throw a error when the property being set doesn't exist
+         * and can set nested properties like: _set("attrA.attrB", "value"); -> get("attrA").setAttrB("value");
          *
-         * @param obj {Object} TODOC
-         * @param data {var} TODOC
-         * @param value {var} TODOC
-         * @return {void | Object | var} TODOC
+         * @param obj {qx.core.Object} object to set properties
+         * @param data {Array | String} key to the property or array of settings
+         * @param value {var} value to set
+         * @return {void | Object | var} returns the object itself or nothing
          */
         _set : function(obj, data, value)
         {
@@ -679,12 +705,12 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
 
         /**
-         * TODOC
+         * Set nested properties like: _set("attrA.attrB", "value"); -> get("attrA").setAttrB("value");
          *
-         * @param obj {Object} TODOC
-         * @param prop {var} TODOC
-         * @param value {var} TODOC
-         * @return {boolean} TODOC
+         * @param obj {qx.core.Object} object to receive the settings
+         * @param prop {String} nested property
+         * @param value {var} value to set
+         * @return {boolean} true if it could find and set the property
          */
         _setNested : function(obj, prop, value)
         {
@@ -728,6 +754,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
             }
         },
         
+        /**
+         * It's similar to qx.Bootstrap.camelCase() except it replaces _[a-z] to [A-Z].
+         * e.g: ab_c -> abC
+         */
         underlineCamelCase : function(str)
         {
           return str.replace(/\_([a-z])/g, function(match, chr) {
