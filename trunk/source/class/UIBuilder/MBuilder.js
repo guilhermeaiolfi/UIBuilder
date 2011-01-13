@@ -282,7 +282,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     }
 	                var clazz = obj.constructor;
 	
-	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm) && clazz != qx.ui.form.RadioButton)
+	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm) && clazz != qx.ui.form.RadioButton && clazz != qx.ui.groupbox.GroupBox)
 	                {
 	                	var form = this._getLastForm('form');
 	                	
