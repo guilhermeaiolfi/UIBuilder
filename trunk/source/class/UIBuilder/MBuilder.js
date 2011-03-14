@@ -301,7 +301,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 }
                 else if (widget[method])
                 {
-                    widget[method].apply(widget, [entry]);
+                    widget[method].apply(widget, [widget, entry]);
                 }
             }
         },
