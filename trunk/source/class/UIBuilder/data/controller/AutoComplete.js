@@ -95,8 +95,10 @@ qx.Class.define("UIBuilder.data.controller.AutoComplete",
   
   events:
   {
-	"selected" : "qx.event.type.Data"
+	"selected" : "qx.event.type.Data",
+	"nothing"  : "qx.event.type.Data"
   },
+  
   /*
   *****************************************************************************
      PROPERTIES
@@ -539,6 +541,7 @@ qx.Class.define("UIBuilder.data.controller.AutoComplete",
       {
         console.log( [model,content,input,suggestions]);
         console.log( "Nothing to match, aborting...");
+		this.fireDataEvent("nothing", null);
         return false;
       }
       console.log( suggestions.toString() );
