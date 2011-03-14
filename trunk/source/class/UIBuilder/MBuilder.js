@@ -106,9 +106,9 @@ qx.Mixin.define("UIBuilder.MBuilder",
 	                    controller.setTarget(widget);
                 	}
                 	else
-                    {
-                        controller = new UIBuilder.data.controller.Form(null, widget);
-                    }
+                  {
+                     controller = new UIBuilder.data.controller.Form(null, widget);
+                  }
                 	
                 	if (definition.model.store)
                 	{
@@ -268,9 +268,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
 
                 var obj = null;
 
+                //console.log(entry.id);
                 if (entry.create)
                 {
-            		obj = this.__create(entry);
+                		obj = this.__create(entry);
 
                     if (include)
                     {
@@ -282,7 +283,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                     }
 	                var clazz = obj.constructor;
 	
-	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm) && clazz != qx.ui.form.RadioButton)
+	                if (qx.Class.hasInterface(clazz, qx.ui.form.IForm) && clazz != qx.ui.form.RadioButton && clazz != qx.ui.groupbox.GroupBox)
 	                {
 	                	var form = this._getLastForm('form');
 	                	
@@ -375,10 +376,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 	store = storeEntry.use;
                 }
                 
-                var idPath = null;
+                var modelPath = null;
                 if (entry.model.controller && entry.model.controller.set)
                 {
-                	idPath = entry.model.controller.set.modelPath;
+                	modelPath = entry.model.controller.set.modelPath;
                 	delete entry.model.controller.set.modelPath;
                 	bidirectional = entry.model.controller.bidirectional != undefined? entry.model.controller.bidirectional : true;
                 }
@@ -391,6 +392,10 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 {
                 	store.bind("model" + (entry.model.controller.items && !qx.lang.String.startsWith(entry.model.controller.items, "[") ? "." + entry.model.controller.items : entry.model.controller.items ? entry.model.controller.items : ""), controller, "model");
                 }
+                else
+                {
+                	this.warn("No store created/used for " + entry.id);
+                }
             }
             if (form)
             {
@@ -402,7 +407,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
                 else if (qx.Class.hasInterface(clazz, qx.ui.core.ISingleSelection))
                 {
                     targetProperty = "modelSelection[0]";
-                    if (idPath)
+                    if (modelPath)
                     {
                     	this._getFormController(form).addBindingOptions(entry.id, target, targetProperty, bidirectional, 
 	                	{
@@ -413,7 +418,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 	                			{
 	                				for (var i = 0; i < model.getLength(); i++) 
 	                				{
-	                					if (model.getItem(i).get(idPath) == data) return model.getItem(i);
+	                					if (model.getItem(i).get(modelPath) == data) return model.getItem(i);
 	                				}
 	                			}
 	                		}
@@ -422,7 +427,7 @@ qx.Mixin.define("UIBuilder.MBuilder",
 	                		{
 	                			if (data)
 	                			{
-	                				return data.get(idPath);
+	                				return data.get(modelPath);
 	                			}
 	                			return data;
 	                		}
